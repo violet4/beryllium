@@ -100,6 +100,7 @@ async def create_process(webapp_id: int, processNew: ProcessNewSchema = Body(...
         webapp_id=webapp_id,
         executable=processNew.executable,
         arguments=processNew.arguments,
+        cwd=processNew.cwd,
         status="stopped",  # Assuming a new process starts as "stopped"
         start_time=int(time.time())
     )

@@ -6,8 +6,6 @@ interface NewWebAppComponentProps {
 }
 
 const NewWebAppComponent: React.FC<NewWebAppComponentProps> = ({setLastUpdateTime}) => {
-  // Argument of type '(num: number) => number' is not assignable to parameter of type 'number'.ts(2345)
-  // NewWebAppComponent.tsx(11, 21): Did you mean to call this expression?
   const [webappName, setWebappName] = useState<string>('');
 
   const handleSubmit = async (event: React.FormEvent) => {

@@ -50,7 +50,6 @@ class Process(Base, Mixin):
     arguments: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20))
 
-    # Back reference for a relationship
     webapp: Mapped[Webapp] = relationship("Webapp", back_populates="processes")
 
     def __str__(self):
@@ -58,9 +57,7 @@ class Process(Base, Mixin):
 
     __repr__ = __str__
 
-# Engine and session setup
-engine = create_engine("sqlite:///db.sqlite3", echo=True)
-# engine = create_engine("sqlite:///:memory:", echo=True)
-Base.metadata.create_all(engine)
 
+engine = create_engine("sqlite:///db.sqlite3", echo=True)
+Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine, class_=S)
