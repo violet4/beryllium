@@ -42,7 +42,7 @@ class Process(Base, Mixin):
     __tablename__ = "process"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    webapp_id: Mapped[int] = mapped_column(ForeignKey('webapps.id'), nullable=False)
+    webapp_id: Mapped[int] = mapped_column(ForeignKey('webapp.id'), nullable=False)
     pid: Mapped[int|None] = mapped_column(Integer, nullable=True)
     start_time: Mapped[int] = mapped_column(INTEGER, default=get_current_timestamp)
     executable: Mapped[str] = mapped_column(String(200))
