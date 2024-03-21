@@ -15,7 +15,7 @@ class Mixin:
 get_current_timestamp = lambda: int(time.time())
 
 class Webapp(Base, Mixin):
-    __tablename__ = "webapps"
+    __tablename__ = "webapp"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
@@ -33,7 +33,7 @@ class Webapp(Base, Mixin):
         super().__init__(*args, **kwargs)
 
     def __str__(self):
-        return self.str_helper(['id', 'name', 'executable', 'arguments', 'status', 'start_time'])
+        return self.str_helper(['id', 'name', 'status'])
 
     __repr__ = __str__
 
@@ -46,6 +46,7 @@ class Process(Base, Mixin):
     pid: Mapped[int|None] = mapped_column(Integer, nullable=True)
     start_time: Mapped[int] = mapped_column(INTEGER, default=get_current_timestamp)
     executable: Mapped[str] = mapped_column(String(200))
+    cwd: Mapped[str] = mapped_column(Text)
     arguments: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20))
 
@@ -53,7 +54,7 @@ class Process(Base, Mixin):
     webapp: Mapped[Webapp] = relationship("Webapp", back_populates="processes")
 
     def __str__(self):
-        return self.str_helper(['id', 'webapp_id', 'pid', 'start_time'])
+        return self.str_helper(['id', 'webapp_id', 'pid', 'start_time', 'executable', 'cwd', 'arguments', 'status'])
 
     __repr__ = __str__
 

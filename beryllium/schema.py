@@ -17,6 +17,7 @@ class WebappSchema(WebappNewSchema):
 class ProcessNewSchema(BaseModel):
     executable: str
     arguments: str
+    cwd: str
 
 
 class ProcessSchema(ProcessNewSchema):
