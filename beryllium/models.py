@@ -38,6 +38,10 @@ class Webapp(Base, ModelHelpers):
         self.start_time = get_current_timestamp()
         super().__init__(*args, **kwargs)
 
+    def sync(self, sess:S, commit=True):
+        #TODO:check if self.pid is set but that PID isn't actually a live process
+        pass
+
     def start(self, sess:S, commit=True):
         for proc in self.processes:
             if not isinstance(proc.status, RunningStatus):
@@ -52,6 +56,23 @@ class Webapp(Base, ModelHelpers):
             if not isinstance(proc.status, NotRunningStatus):
                 proc.terminate(sess, commit=commit)
         self.status = NotRunningStatus.TERMINATED
+        if commit:
+            sess.commit()
+
+    def update_status(self, sess:S, commit=True):
+        running = 0
+        not_running = 0
+        for proc in self.processes:
+            if isinstance(proc.status, RunningStatus):
+                running += 1
+            elif isinstance(proc.status, NotRunningStatus):
+                not_running += 1
+        if running>0 and not_running>0:
+            self.status = RunningStatus.PARTIAL
+        elif running>0:
+            self.status = RunningStatus.STARTED
+        elif not_running>0:
+            self.status = NotRunningStatus.STOPPED
         if commit:
             sess.commit()
 
@@ -80,6 +101,10 @@ class Process(Base, ModelHelpers):
 
     __repr__ = __str__
 
+    def sync(self, sess:S, commit=True):
+        #TODO:check if self.pid is set but that PID isn't actually a live process
+        pass
+
     def start(self, sess:S, commit=True):
         # process starts immediately
         proc = subprocess.Popen(
@@ -87,9 +112,11 @@ class Process(Base, ModelHelpers):
             cwd=os.path.expanduser(self.cwd),
             preexec_fn=os.setsid,
         )
+        #TODO:check if it actually started under the hood or if it failed to start?
         self.pid = proc.pid
         self.status = RunningStatus.STARTED
         self.start_time = int(time.time())
+        self.webapp.update_status(sess, commit=commit)
         if commit:
             sess.commit()
 
@@ -98,6 +125,8 @@ class Process(Base, ModelHelpers):
             os.kill(self.pid, signal.SIGTERM)
             #TODO:check if it actually terminated under the hood or if it failed to terminate?
             self.status = NotRunningStatus.TERMINATED
+            self.pid = None
+            self.webapp.update_status(sess, commit=commit)
             if commit:
                 sess.commit()
 

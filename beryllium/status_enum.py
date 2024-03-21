@@ -10,6 +10,7 @@ class AutoName(StrEnum):
 
 class RunningStatus(AutoName):
     STARTED = autostr()
+    PARTIAL = autostr()
 
 class NotRunningStatus(AutoName):
     NEW = autostr()
