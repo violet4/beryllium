@@ -4,9 +4,10 @@ import {ProcessSchema} from './client/models/ProcessSchema';
 
 export interface FocusedWebAppComponentProps {
   focusedWebapp: WebappSchema|undefined;
+  setLastUpdateTime: (fn: (num: number) => number) => void;
 };
 
-export const FocusedWebAppComponent: React.FC<FocusedWebAppComponentProps> = ({ focusedWebapp }) => {
+export const FocusedWebAppComponent: React.FC<FocusedWebAppComponentProps> = ({ focusedWebapp, setLastUpdateTime }) => {
 
   const [processes, setProcesses] = useState<ProcessSchema[]>([]);
 
@@ -42,7 +43,11 @@ export const FocusedWebAppComponent: React.FC<FocusedWebAppComponentProps> = ({ 
         })}
       </div>
       <div>
-        <NewProcessComponent webapp_id={focusedWebapp.id} />
+        <NewProcessComponent
+          webapp_id={focusedWebapp.id}
+          webapp_name={focusedWebapp.name}
+          setLastUpdateTime={setLastUpdateTime}
+        />
       </div>
     </div>
   );
@@ -50,13 +55,26 @@ export const FocusedWebAppComponent: React.FC<FocusedWebAppComponentProps> = ({ 
 
 interface NewProcessComponentProps {
   webapp_id: number;
+  webapp_name: string;
+  setLastUpdateTime: (fn: (num: number) => number) => void;
 }
-const NewProcessComponent: React.FC<NewProcessComponentProps> = ({webapp_id}) => {
+const NewProcessComponent: React.FC<NewProcessComponentProps> = ({webapp_id, webapp_name, setLastUpdateTime}) => {
   const [reload, setReload] = useState(false);
   const [processes, setProcesses] = useState<ProcessSchema[]>([]);
   const [exeName, setExeName] = useState('');
   const [args, setArgs] = useState('');
   const [cwd, setCwd] = useState('');
+
+  const deleteWebapp = (name: string) => {
+    fetch(`/api/apps/${name}`, {method: "DELETE"}).then(r=>r.json());
+    setLastUpdateTime(n=>n+1);
+    // setReload(!reload);
+  };
+
+  const deleteProcess = (process_id: number) => {
+    fetch(`/api/processes/${process_id}`, {method: "DELETE"});
+    setReload(!reload);
+  };
 
   useEffect(() => {
     fetch(`/api/processes/${webapp_id}`).then(r => r.json()).then(d => {
@@ -84,9 +102,14 @@ const NewProcessComponent: React.FC<NewProcessComponentProps> = ({webapp_id}) =>
   return (
     <>
       <div>
+        {webapp_name}
+        <button onClick={() => deleteWebapp(webapp_name)}>Delete</button>
+      </div>
+      <div>
         {processes.map(p => {
           return (
             <div key={p.id}>
+              <button onClick={() => deleteProcess(p.id)}>Delete</button>
               Process:
               {p.id}:
               {p.cwd}:

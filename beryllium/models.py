@@ -20,6 +20,14 @@ class ModelHelpers:
 
 get_current_timestamp = lambda: int(time.time())
 
+def get_clean_environ():
+    env = os.environ.copy()
+    del env['VIRTUAL_ENV']
+    #TODO:be smarter about this. right now we're assuming the first directory in PATH is our poetry python environment.
+    env['PATH'] = env['PATH'].split(':', maxsplit=1)[1]
+    return env
+
+
 class Webapp(Base, ModelHelpers):
     __tablename__ = "webapp"
 
@@ -111,6 +119,7 @@ class Process(Base, ModelHelpers):
             args=[self.executable]+shlex.split(self.arguments),
             cwd=os.path.expanduser(self.cwd),
             preexec_fn=os.setsid,
+            env=get_clean_environ(),
         )
         #TODO:check if it actually started under the hood or if it failed to start?
         self.pid = proc.pid

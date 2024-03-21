@@ -12,9 +12,16 @@ function App() {
 
   return (
     <>
-      <WebAppListComponent lastUpdateTime={lastUpdateTime} setFocusedWebapp={setFocusedWebapp} />
+      <WebAppListComponent
+        lastUpdateTime={lastUpdateTime}
+        setLastUpdateTime={setLastUpdateTime}
+        setFocusedWebapp={setFocusedWebapp}
+      />
       <NewWebAppComponent setLastUpdateTime={setLastUpdateTime} />
-      <FocusedWebAppComponent focusedWebapp={focusedWebapp} />
+      <FocusedWebAppComponent
+        focusedWebapp={focusedWebapp}
+        setLastUpdateTime={setLastUpdateTime}
+      />
     </>
   )
 }
