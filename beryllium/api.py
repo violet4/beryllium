@@ -4,6 +4,7 @@ from fastapi import FastAPI, APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 
+from .status_enum import NotRunningStatus
 from .models import Session as SessionMaker, Webapp, Process
 from .schema import WebappSchema, WebappNewSchema, ProcessNewSchema, ProcessSchema
 
@@ -53,8 +54,7 @@ async def start_webapp(app_name: str, sess:Session=Depends(get_db)):
     webapp = sess.query(Webapp).filter(Webapp.name==app_name).first()
     if webapp is None:
         raise HTTPException(404, "No webapp with that name")
-    webapp.status = "started"
-    webapp.start_time = int(time.time())
+    webapp.start(sess, commit=False)
     sess.commit()
     sess.refresh(webapp)
     return WebappSchema.model_validate(webapp)
@@ -65,7 +65,7 @@ async def stop_webapp(app_name: str, sess:Session=Depends(get_db)):
     webapp = sess.query(Webapp).filter(Webapp.name==app_name).first()
     if webapp is None:
         raise HTTPException(404, "No webapp with that name")
-    webapp.status = "stopped"
+    webapp.terminate(sess, commit=False)
     sess.commit()
     sess.refresh(webapp)
     return WebappSchema.model_validate(webapp)
@@ -92,7 +92,6 @@ async def list_processes(webapp_id: int, sess: Session = Depends(get_db)):
 
 @router.post("/processes/{webapp_id}", response_model=ProcessSchema)
 async def create_process(webapp_id: int, processNew: ProcessNewSchema = Body(...), sess: Session = Depends(get_db)):
-    # Verify if the webapp exists
     webapp = sess.query(Webapp).filter(Webapp.id == webapp_id).first()
     if webapp is None:
         raise HTTPException(status_code=404, detail="Webapp not found")
@@ -101,7 +100,7 @@ async def create_process(webapp_id: int, processNew: ProcessNewSchema = Body(...
         executable=processNew.executable,
         arguments=processNew.arguments,
         cwd=processNew.cwd,
-        status="stopped",  # Assuming a new process starts as "stopped"
+        status=NotRunningStatus.NEW,
         start_time=int(time.time())
     )
     sess.add(process)
@@ -115,9 +114,7 @@ async def start_process(process_id: int, sess: Session = Depends(get_db)):
     process = sess.query(Process).filter(Process.id == process_id).first()
     if process is None:
         raise HTTPException(404, "No process with that ID")
-    process.status = "started"
-    process.start_time = int(time.time())
-    sess.commit()
+    process.start(sess)
     sess.refresh(process)
     return ProcessSchema.model_validate(process)
 
@@ -127,8 +124,7 @@ async def stop_process(process_id: int, sess: Session = Depends(get_db)):
     process = sess.query(Process).filter(Process.id == process_id).first()
     if process is None:
         raise HTTPException(404, "No process with that ID")
-    process.status = "stopped"
-    sess.commit()
+    process.terminate(sess)
     sess.refresh(process)
     return ProcessSchema.model_validate(process)
 
