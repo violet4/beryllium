@@ -78,7 +78,7 @@ const NewProcessComponent: React.FC<NewProcessComponentProps> = ({webapp_id, web
 
   useEffect(() => {
     fetch(`/api/apps/${webapp_id}/processes`).then(r => r.json()).then(d => {
-      console.log(`data: ${JSON.stringify(d)}`)
+      // console.log(`data: ${JSON.stringify(d)}`)
       setProcesses(d);
     })
   }, [webapp_id, reload]);
