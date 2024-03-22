@@ -4,6 +4,7 @@
 /* eslint-disable */
 export type WebappSchema = {
     name: string;
+    url: (string | null);
     id: number;
     status: string;
     start_time: number;

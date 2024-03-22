@@ -35,6 +35,7 @@ class Webapp(Base, ModelHelpers):
     name: Mapped[str] = mapped_column(String(100), unique=True)
     start_time: Mapped[int] = mapped_column(Integer, default=get_current_timestamp)
     status: Mapped[str] = mapped_column(String(20))
+    url: Mapped[str|None] = mapped_column(Text)
 
     processes: Mapped[list['Process']] = relationship(
         "Process",
@@ -101,6 +102,7 @@ class Process(Base, ModelHelpers):
     cwd: Mapped[str] = mapped_column(Text)
     arguments: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20))
+    url: Mapped[str|None] = mapped_column(Text)
 
     webapp: Mapped[Webapp] = relationship("Webapp", back_populates="processes")
 

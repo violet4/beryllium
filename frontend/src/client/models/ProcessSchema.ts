@@ -6,6 +6,7 @@ export type ProcessSchema = {
     executable: string;
     arguments: string;
     cwd: string;
+    url: (string | null);
     id: number;
     status: string;
     start_time: number;

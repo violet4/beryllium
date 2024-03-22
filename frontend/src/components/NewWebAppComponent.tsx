@@ -7,12 +7,14 @@ interface NewWebAppComponentProps {
 
 const NewWebAppComponent: React.FC<NewWebAppComponentProps> = ({setLastUpdateTime}) => {
   const [webappName, setWebappName] = useState<string>('');
+  const [url, setUrl] = useState<string>('');
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const newWebapp: WebappNew = {
       name: webappName,
+      url: url,
     };
 
     try {
@@ -50,6 +52,14 @@ const NewWebAppComponent: React.FC<NewWebAppComponentProps> = ({setLastUpdateTim
           id="webappName"
           value={webappName}
           onChange={(e) => setWebappName(e.target.value)}
+          required
+        />
+        <label htmlFor="webapp_url">Url:</label>
+        <input
+          type="text"
+          id="webapp_url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
           required
         />
       </div>

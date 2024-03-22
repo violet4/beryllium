@@ -41,7 +41,8 @@ async def create_webapp(webappNew:WebappNewSchema=Body(...), sess:Session=Depend
         raise HTTPException(400, "A webapp by that name already exists")
     webapp = Webapp(
         name=webappNew.name,
-        status="stopped",
+        status=NotRunningStatus.NEW,
+        url=webappNew.url,
     )
     sess.add(webapp)
     sess.commit()
@@ -49,9 +50,9 @@ async def create_webapp(webappNew:WebappNewSchema=Body(...), sess:Session=Depend
     return WebappSchema.model_validate(webapp)
 
 
-@router.post("/apps/{app_name}")
-async def start_webapp(app_name: str, sess:Session=Depends(get_db)):
-    webapp = sess.query(Webapp).filter(Webapp.name==app_name).first()
+@router.put("/apps/{app_id}/start")
+async def start_webapp(app_id: int, sess:Session=Depends(get_db)):
+    webapp = sess.query(Webapp).filter(Webapp.id==app_id).first()
     if webapp is None:
         raise HTTPException(404, "No webapp with that name")
     webapp.start(sess, commit=False)
@@ -60,12 +61,23 @@ async def start_webapp(app_name: str, sess:Session=Depends(get_db)):
     return WebappSchema.model_validate(webapp)
 
 
-@router.put("/apps/{app_name}")
-async def stop_webapp(app_name: str, sess:Session=Depends(get_db)):
-    webapp = sess.query(Webapp).filter(Webapp.name==app_name).first()
+@router.put("/apps/{app_id}/stop")
+async def stop_webapp(app_id: int, sess:Session=Depends(get_db)):
+    webapp = sess.query(Webapp).filter(Webapp.id==app_id).first()
     if webapp is None:
         raise HTTPException(404, "No webapp with that name")
     webapp.terminate(sess, commit=False)
+    sess.commit()
+    sess.refresh(webapp)
+    return WebappSchema.model_validate(webapp)
+
+
+@router.put("/apps/{app_id}")
+async def edit_webapp(app_id: int, webapp_edits:WebappNewSchema=Body(...), sess:Session=Depends(get_db)):
+    webapp = sess.query(Webapp).filter(Webapp.id==app_id).first()
+    if webapp is None:
+        raise HTTPException(404, "No webapp with that ID")
+    webapp.url = webapp_edits.url
     sess.commit()
     sess.refresh(webapp)
     return WebappSchema.model_validate(webapp)
@@ -84,7 +96,7 @@ async def delete_webapp(app_name: str, sess:Session=Depends(get_db)):
 ## Processes
 
 
-@router.get("/processes/{webapp_id}", response_model=list[ProcessSchema])
+@router.get("/apps/{webapp_id}/processes", response_model=list[ProcessSchema])
 async def list_processes(webapp_id: int, sess: Session = Depends(get_db)):
     processes = sess.query(Process).filter(Process.webapp_id == webapp_id).all()
     return [ProcessSchema.model_validate(process) for process in processes]
@@ -100,6 +112,7 @@ async def create_process(webapp_id: int, processNew: ProcessNewSchema = Body(...
         executable=processNew.executable,
         arguments=processNew.arguments,
         cwd=processNew.cwd,
+        url=processNew.url,
         status=NotRunningStatus.NEW,
         start_time=int(time.time())
     )
@@ -109,9 +122,9 @@ async def create_process(webapp_id: int, processNew: ProcessNewSchema = Body(...
     return ProcessSchema.model_validate(process)
 
 
-@router.post("/processes/start/{process_id}", response_model=ProcessSchema)
+@router.put("/processes/{process_id}/start", response_model=ProcessSchema)
 async def start_process(process_id: int, sess: Session = Depends(get_db)):
-    process = sess.query(Process).filter(Process.id == process_id).first()
+    process = sess.query(Process).filter(Process.id==process_id).first()
     if process is None:
         raise HTTPException(404, "No process with that ID")
     process.start(sess)
@@ -119,12 +132,22 @@ async def start_process(process_id: int, sess: Session = Depends(get_db)):
     return ProcessSchema.model_validate(process)
 
 
-@router.put("/processes/stop/{process_id}", response_model=ProcessSchema)
+@router.put("/processes/{process_id}/stop", response_model=ProcessSchema)
 async def stop_process(process_id: int, sess: Session = Depends(get_db)):
-    process = sess.query(Process).filter(Process.id == process_id).first()
+    process = sess.query(Process).filter(Process.id==process_id).first()
     if process is None:
         raise HTTPException(404, "No process with that ID")
     process.terminate(sess)
+    sess.refresh(process)
+    return ProcessSchema.model_validate(process)
+
+
+@router.put("/processes/{process_id}", response_model=ProcessSchema)
+async def edit_process(process_id: int, proc_edits:ProcessNewSchema=Body(...), sess:Session=Depends(get_db)):
+    process = sess.query(Process).filter(Process.id == process_id).first()
+    if process is None:
+        raise HTTPException(404, "No process with that ID")
+    process.url = proc_edits.url
     sess.refresh(process)
     return ProcessSchema.model_validate(process)
 

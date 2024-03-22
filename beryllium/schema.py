@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class WebappNewSchema(BaseModel):
     name: str
+    url: str|None
 
 
 class WebappSchema(WebappNewSchema):
@@ -18,6 +19,7 @@ class ProcessNewSchema(BaseModel):
     executable: str
     arguments: str
     cwd: str
+    url: str|None
 
 
 class ProcessSchema(ProcessNewSchema):

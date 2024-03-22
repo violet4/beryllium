@@ -6,5 +6,6 @@ export type ProcessNewSchema = {
     executable: string;
     arguments: string;
     cwd: string;
+    url: (string | null);
 };
 

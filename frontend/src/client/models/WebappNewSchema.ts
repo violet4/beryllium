@@ -4,5 +4,6 @@
 /* eslint-disable */
 export type WebappNewSchema = {
     name: string;
+    url: (string | null);
 };
 

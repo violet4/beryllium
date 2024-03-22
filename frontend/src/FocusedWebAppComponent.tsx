@@ -72,12 +72,12 @@ const NewProcessComponent: React.FC<NewProcessComponentProps> = ({webapp_id, web
   };
 
   const deleteProcess = (process_id: number) => {
-    fetch(`/api/processes/${process_id}`, {method: "DELETE"});
+    fetch(`/api/${process_id}/processes`, {method: "DELETE"});
     setReload(!reload);
   };
 
   useEffect(() => {
-    fetch(`/api/processes/${webapp_id}`).then(r => r.json()).then(d => {
+    fetch(`/api/apps/${webapp_id}/processes`).then(r => r.json()).then(d => {
       console.log(`data: ${JSON.stringify(d)}`)
       setProcesses(d);
     })
@@ -107,10 +107,11 @@ const NewProcessComponent: React.FC<NewProcessComponentProps> = ({webapp_id, web
       </div>
       <div>
         {processes.map(p => {
+          const proc_name = p.url? <a href={p.url}>Process</a> : "Process";
           return (
             <div key={p.id}>
               <button onClick={() => deleteProcess(p.id)}>Delete</button>
-              Process:
+              {proc_name}:
               {p.id}:
               {p.cwd}:
               {p.executable}:
