@@ -84,6 +84,7 @@ const WebAppListComponent: React.FC<WebAppListComponentProps> = ({lastUpdateTime
       <h2>Web Apps</h2>
       <ul>
         {webapps.map((webapp) => <WebAppItemComponent
+          key={webapp.id}
           webapp={webapp}
           setFocusedWebapp={setFocusedWebapp}
           doStartWebapp={doStartWebapp}
