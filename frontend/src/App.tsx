@@ -5,13 +5,13 @@ import NewWebAppComponent from './components/NewWebAppComponent';
 import WebAppListComponent from './components/WebAppListComponent';
 import { FocusedWebAppComponent } from './FocusedWebAppComponent';
 
-
 function App() {
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
   const [focusedWebapp, setFocusedWebapp] = useState<WebappSchema|undefined>(undefined);
 
   return (
     <>
+      <img src="beryllium.png" height="125px"/>
       <WebAppListComponent
         lastUpdateTime={lastUpdateTime}
         setLastUpdateTime={setLastUpdateTime}
